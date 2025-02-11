@@ -13,24 +13,21 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Build Docker Image
-        run: docker build -t fastapi-app .
-
-      - name: Push Docker Image to Docker Hub
+      - name: Setup SSH Key
         run: |
-          echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
-          docker tag fastapi-app okaugustine/fastapi-app:latest  # ✅ Ensure username is correct
-          docker push okaugustine/fastapi-app:latest
+          mkdir -p ~/.ssh
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/hng
+          chmod 600 ~/.ssh/hng
+          eval "$(ssh-agent -s)"
+          ssh-add ~/.ssh/hng
 
       - name: Deploy to Server
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}  # ✅ Use GitHub Secret for SSH Key
         run: |
-          echo "$SSH_PRIVATE_KEY" > ssh_key.pem
-          chmod 600 ssh_key.pem
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/hng ukpechukwu@34.60.53.38 "
           sudo docker stop fastapi-container || true &&
           sudo docker rm fastapi-container || true &&
-          sudo docker pull okaugustinee/fastapi-app:latest &&
-          sudo docker run -d --name fastapi-container -p 8000:8000 okaugustinee/fastapi-app:latest
+          sudo docker pull ***e/fastapi-app:latest &&
+          sudo docker run -d --name fastapi-container -p 8000:8000 ***e/fastapi-app:latest
           "
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
