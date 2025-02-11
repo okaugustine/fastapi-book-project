@@ -28,9 +28,9 @@ jobs:
         run: |
           echo "$SSH_PRIVATE_KEY" > ssh_key.pem
           chmod 600 ssh_key.pem
-          ssh -o StrictHostKeyChecking=no -i ssh_key.pem ukpechukwu@34.60.53.38 "
-            docker pull okaugustine/fastapi-app:latest &&
-            docker stop fastapi-container || true &&
-            docker rm fastapi-container || true &&
-            docker run -d --name fastapi-container -p 8000:8000 okaugustine/fastapi-app:latest
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/hng ukpechukwu@34.60.53.38 "
+          sudo docker stop fastapi-container || true &&
+          sudo docker rm fastapi-container || true &&
+          sudo docker pull okaugustinee/fastapi-app:latest &&
+          sudo docker run -d --name fastapi-container -p 8000:8000 okaugustinee/fastapi-app:latest
           "
