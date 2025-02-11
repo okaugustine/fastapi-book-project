@@ -16,10 +16,12 @@ jobs:
       - name: Setup SSH Key
         run: |
           mkdir -p ~/.ssh
-          echo "$SSH_PRIVATE_KEY" > ~/.ssh/hng
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/hng
           chmod 600 ~/.ssh/hng
+          ssh-keygen -y -f ~/.ssh/hng > ~/.ssh/hng.pub || exit 1
           eval "$(ssh-agent -s)"
           ssh-add ~/.ssh/hng
+        shell: bash
 
       - name: Deploy to Server
         run: |
