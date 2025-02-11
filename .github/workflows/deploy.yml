@@ -24,4 +24,4 @@ jobs:
 
       - name: Deploy to Server
         run: |
-          ssh -o StrictHostKeyChecking=no ukpechukwu@34.135.215.193 'docker pull okaugustinee/fastapi-app:latest && docker run -d -p 8000:8000 fastapi-app'
+          ssh -o StrictHostKeyChecking=no ssh -i /Users/ukpechukwu/Desktop/sshkey ukpechukwu@34.135.215.193 'docker pull okaugustinee/fastapi-app:latest && docker run -d -p 8000:8000 fastapi-app'
