@@ -2,43 +2,32 @@ name: CD Pipeline
 on:
   push:
     branches: [main]
+
 jobs:
   deploy:
-    runs-on: ubuntu-latest # Specifies to run the job on the latest Ubuntu runner.
+    runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4 # Checks out the repository code.
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Deploy to Server
-      uses: appleboy/ssh-action@master
-      with:
-        host: ${{ secrets.ssh_server }} # Your server IP or hostname, stored as a secret.
-        username: ${{ secrets.ssh_username }} # SSH username, stored as a secret.
-        password: ${{ secrets.ssh_password }} # SSH password, stored as a secret.
-        port: 22 # Optional. Default SSH port 22 is used unless changed.
-        script: |
-           echo "Deploying to ${{ github.ref_name }}..."
-                    
-                    # Map branch to Docker container
-                    if [ "${{ github.ref_name }}" = "main" ]; then
-                      container_name="fastapi-app"
-                      branch="main"
-                    else
-                      echo "Unknown branch. Exiting."
-                      exit 1
-                    fi
-        
-                    docker exec ${container_name} /bin/bash -c "
-                        git fetch origin && \
-                        git reset --hard HEAD && \
-                        git checkout ${branch} && \
-                        git reset --hard origin/${branch} && \
-                        git pull --rebase --no-edit
-                    "
-          
-                    # Restart the Docker container
-                    docker restart ${container_name}
+      - name: Deploy to Server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.ssh_server }}
+          username: ${{ secrets.ssh_username }}
+          password: ${{ secrets.ssh_password }}
+          port: 22
+          script: |
+            echo "Deploying application..."
+            cd /path/to/project
 
+            # Pull latest changes
+            git reset --hard HEAD
+            git pull origin main
 
+            # Restart the application using Docker Compose
+            docker-compose down
+            docker-compose up -d --build
 
+            echo "Deployment completed."
