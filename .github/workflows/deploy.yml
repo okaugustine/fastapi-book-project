@@ -1,98 +1,44 @@
-name: CI/CD Pipeline
-
+name: CD Pipeline
 on:
   push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
-
+    branches: [main]
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2
-
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.9'
-
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-
-    - name: Run tests
-      run: |
-        pytest
-
   deploy:
-    needs: test
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest # Specifies to run the job on the latest Ubuntu runner.
 
     steps:
-    - uses: actions/checkout@v2
+    - name: Checkout repository
+      uses: actions/checkout@v4 # Checks out the repository code.
 
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v1
-
-    - name: Install Docker Compose
-      run: |
-        sudo curl -L "https://github.com/docker/compose/releases/download/v2.17.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-        sudo chmod +x /usr/local/bin/docker-compose
-        docker-compose --version
-
-    - name: Authenticate with Google Cloud
-      uses: google-github-actions/auth@v1
-      with:
-        credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
-
-    - name: Configure Docker to use gcloud as a credential helper
-      run: |
-        gcloud auth configure-docker gcr.io
-
-    - name: Build and push Docker image to Google Container Registry (GCR)
-      run: |
-        docker-compose build --no-cache
-        docker images
-        docker tag fastapi-book-project-api:latest gcr.io/${{ secrets.GCP_PROJECT_ID }}/fastapi-book-project:latest
-        docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/fastapi-book-project:latest
-
-    - name: Deploy to Google Cloud Run
-      run: |
-        gcloud run deploy fastapi-book-project \
-          --image gcr.io/${{ secrets.GCP_PROJECT_ID }}/fastapi-book-project:latest \
-          --platform managed \
-          --region ${{ secrets.GCP_REGION }} \
-          --allow-unauthenticated
-
-    - name: Authenticate Docker Hub
-      run: |
-        echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
-
-    - name: SSH into server and deploy
+    - name: Deploy to Server
       uses: appleboy/ssh-action@master
       with:
-        host: ${{ secrets.GCP_VM_HOST }}
-        username: ${{ secrets.GCP_VM_USERNAME }}
-        key: ${{ secrets.GCP_SSH_PRIVATE_KEY }}
+        host: ${{ secrets.ssh_server }} # Your server IP or hostname, stored as a secret.
+        username: ${{ secrets.ssh_username }} # SSH username, stored as a secret.
+        password: ${{ secrets.ssh_password }} # SSH password, stored as a secret.
+        port: 22 # Optional. Default SSH port 22 is used unless changed.
         script: |
-          echo "Starting the deploy process on GCP VM..."
-          sudo apt-get update
-          if [ ! -d "~/fastapi-book-project" ]; then
-            git clone https://github.com/citadelict/fastapi-book-project.git ~/fastapi-book-project
-          else
-            cd ~/fastapi-book-project && git pull origin main
-          fi
-          cd ~/fastapi-book-project
-          git pull origin main
-          echo "Pulling the latest image from GCR..."
-          docker pull gcr.io/${{ secrets.GCP_PROJECT_ID }}/fastapi-book-project:latest
-          echo "Stopping and removing existing containers..."
-          docker-compose down
-          echo "Starting new containers..."
-          docker-compose up -d
-          docker-compose ps
-          echo "Cleaning up unused images..."
-          docker image prune -f
+           echo "Deploying to ${{ github.ref_name }}..."
+                    
+                    # Map branch to Docker container
+                    if [ "${{ github.ref_name }}" = "main" ]; then
+                      container_name="fastapi-app"
+                      branch="main"
+                    else
+                      echo "Unknown branch. Exiting."
+                      exit 1
+                    fi
+          
+                    docker exec ${container_name} /bin/bash -c "
+                        git fetch origin && \
+                        git reset --hard HEAD && \
+                        git checkout ${branch} && \
+                        git reset --hard origin/${branch} && \
+                        git pull --rebase --no-edit
+                    "
+          
+                    # Restart the Docker container
+                    docker restart ${container_name}
+
+
+
