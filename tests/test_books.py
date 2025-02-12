@@ -1,5 +1,6 @@
 from tests import client
 
+
 def test_get_all_books():
     response = client.get("/books/")
     assert response.status_code == 200
