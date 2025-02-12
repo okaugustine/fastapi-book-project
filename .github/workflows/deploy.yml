@@ -44,7 +44,8 @@ jobs:
           script: |
             echo "Deleting existing application files on EC2..."
             rm -rf /home/${{ secrets.EC2_USERNAME }}/* || true
-
+          debug: true
+    #############
       - name: Copy Entire Repository to EC2
         uses: appleboy/scp-action@master
         with:
