@@ -35,8 +35,16 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      
-    #############
+      - name: Delete Existing Application Files on EC2
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+          script: |
+            echo "Deleting existing application files on EC2..."
+            rm -rf /home/${{ secrets.EC2_USERNAME }}/* || true
+
       - name: Copy Entire Repository to EC2
         uses: appleboy/scp-action@master
         with:
@@ -55,7 +63,7 @@ jobs:
           script: |
             echo "Stopping and removing existing containers..."
             docker ps -a --filter "name=fastapi" --format "{{.ID}}" | xargs -r docker stop || true
-            docker git ps -a --filter "name=nginx" --format "{{.ID}}" | xargs -r docker stop || true
+            docker ps -a --filter "name=nginx" --format "{{.ID}}" | xargs -r docker stop || true
             docker ps -a --filter "name=fastapi" --format "{{.ID}}" | xargs -r docker rm || true
             docker ps -a --filter "name=nginx" --format "{{.ID}}" | xargs -r docker rm || true
 
@@ -80,7 +88,6 @@ jobs:
             echo "Running docker-compose down..."
             cd /home/${{ secrets.EC2_USERNAME }}
             docker-compose down || true
-            debug: true
 
       - name: Run docker-compose Up
         uses: appleboy/ssh-action@master
