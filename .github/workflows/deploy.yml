@@ -28,7 +28,7 @@ jobs:
                       echo "Unknown branch. Exiting."
                       exit 1
                     fi
-          
+        
                     docker exec ${container_name} /bin/bash -c "
                         git fetch origin && \
                         git reset --hard HEAD && \
