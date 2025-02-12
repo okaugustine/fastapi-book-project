@@ -56,7 +56,7 @@ fastapi-book-project/
 
 =======
 git clone https://github.com/okaugustine/fastapi-book-project.git
->>>>>>> 2bb1810 (aws deployment)
+(aws deployment)
 cd fastapi-book-project
 ```
 
