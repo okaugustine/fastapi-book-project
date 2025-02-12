@@ -64,7 +64,7 @@ jobs:
           script: |
             echo "Stopping and removing existing containers..."
             docker ps -a --filter "name=fastapi" --format "{{.ID}}" | xargs -r docker stop || true
-            docker ps -a --filter "name=nginx" --format "{{.ID}}" | xargs -r docker stop || true
+            docker git ps -a --filter "name=nginx" --format "{{.ID}}" | xargs -r docker stop || true
             docker ps -a --filter "name=fastapi" --format "{{.ID}}" | xargs -r docker rm || true
             docker ps -a --filter "name=nginx" --format "{{.ID}}" | xargs -r docker rm || true
 
