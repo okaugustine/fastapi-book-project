@@ -78,7 +78,6 @@ jobs:
             docker images --filter "reference=*fastapi*" --format "{{.ID}}" | xargs -r docker rmi -f || true
             docker images --filter "reference=*nginx*" --format "{{.ID}}" | xargs -r docker rmi -f || true
 
-            
       - name: Run docker-compose Down
         uses: appleboy/ssh-action@master
         with:

@@ -14,7 +14,6 @@ This project is a RESTful API built with FastAPI for managing a book collection.
 - 🔒 CORS middleware enabled
 
 ## Project Structure
->>>>>>> 2bb1810 (aws deployment)
 
 ```
 fastapi-book-project/
@@ -50,10 +49,7 @@ fastapi-book-project/
 1. Clone the repository:
 
 ```bash
-
-=======
-git clone https://github.com/okaugustine/fastapi-book-project.git
-(aws deployment)
+git clone https://github.com/hng12-devbotops/fastapi-book-project.git
 cd fastapi-book-project
 ```
 
